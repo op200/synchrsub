@@ -20,13 +20,16 @@ jobs:
         with:
           node-version: 'lts/*'  # 使用LTS版本
           check-latest: true  # 确保使用最新版本
-          cache-dependency-path: 'package-lock.json'
+          cache-dependency-path: 'pnpm-lock.yaml'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
 
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
 
       - name: Build project
-        run: npm run build
+        run: pnpm build
 
       - name: Checkout target branch
         uses: actions/checkout@v4
