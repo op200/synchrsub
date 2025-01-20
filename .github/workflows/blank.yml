@@ -20,17 +20,14 @@ jobs:
         with:
           node-version: '23'  # 指定Node.js版本
           check-latest: true  # 确保使用最新版本
-          cache: 'pnpm'  # 启用pnpm缓存
-          cache-dependency-path: 'pnpm-lock.yaml'
-
-      - name: Install pnpm
-        run: npm install -g pnpm
+          cache: 'npm'  # 启用npm缓存
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
-        run: pnpm install
+        run: npm install
 
       - name: Build project
-        run: pnpm build
+        run: npm run build
 
       - name: Checkout target branch
         uses: actions/checkout@v4
