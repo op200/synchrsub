@@ -18,17 +18,19 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          cache: 'yarn'  # 启用yarn缓存
+          node-version: '23'  # 指定Node.js版本
           check-latest: true  # 确保使用最新版本
+          cache: 'pnpm'  # 启用pnpm缓存
+          cache-dependency-path: 'pnpm-lock.yaml'
 
-      - name: Install Yarn
-        run: npm install -g yarn
+      - name: Install pnpm
+        run: npm install -g pnpm
 
       - name: Install dependencies
-        run: yarn install
+        run: pnpm install
 
       - name: Build project
-        run: yarn build
+        run: pnpm build
 
       - name: Checkout target branch
         uses: actions/checkout@v4
