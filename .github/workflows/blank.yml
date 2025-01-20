@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '23'  # 指定Node.js版本
+          node-version: 'lts/*'  # 使用LTS版本
           check-latest: true  # 确保使用最新版本
           cache: 'npm'  # 启用npm缓存
           cache-dependency-path: 'package-lock.json'
