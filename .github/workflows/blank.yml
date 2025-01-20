@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'  # 根据项目需求设置Node.js版本
-          cache: 'npm'
+          cache: 'yarn'  # 启用yarn缓存
 
       - name: Install Yarn
         run: npm install -g yarn
