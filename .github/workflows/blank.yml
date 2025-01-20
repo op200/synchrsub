@@ -11,15 +11,15 @@ jobs:
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # 获取完整历史记录
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'  # 根据项目需求设置Node.js版本
           cache: 'yarn'  # 启用yarn缓存
+          check-latest: true  # 确保使用最新版本
 
       - name: Install Yarn
         run: npm install -g yarn
@@ -31,7 +31,7 @@ jobs:
         run: yarn build
 
       - name: Checkout target branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: web-build  # 目标分支名称
           fetch-depth: 0
