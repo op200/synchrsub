@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 'lts/*'  # 使用LTS版本
           check-latest: true  # 确保使用最新版本
-          cache: 'npm'  # 启用npm缓存
+          cache: 'false'  # 启用npm缓存
           cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
