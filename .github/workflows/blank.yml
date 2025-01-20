@@ -18,14 +18,11 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '23'  # 根据项目需求设置Node.js版本
+          node-version: '18'  # 根据项目需求设置Node.js版本
           cache: 'npm'
 
       - name: Install dependencies
         run: npm install
-
-      - name: Generate package-lock.json
-        run: npm install --package-lock-only
 
       - name: Build project
         run: npm run build
