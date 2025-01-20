@@ -41,7 +41,7 @@ jobs:
       - name: Copy build files
         run: |
           mkdir -p dist
-          cp -R ../dist/* ./dist/
+          cp -R dist/* ./dist/
 
       - name: Commit and push build files
         env:
