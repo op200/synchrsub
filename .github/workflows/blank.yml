@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Generate package-lock.json
+        run: npm install --package-lock-only
+
       - name: Build project
         run: npm run build
 
