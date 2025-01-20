@@ -1,0 +1,32 @@
+:root {
+    --background-color: #fff;
+    --text-color: #333;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #1f1f1f;
+        --text-color: #ccc;
+    }
+}
+
+* {
+    font-family: -apple-system, "Helvetica Neue", Helvetica, "Nimbus Sans L", "Liberation Sans", "PingFang SC", "Source Han Sans CN", "Source Han Sans SC", "Microsoft YaHei", "Wenquanyi Micro Hei", "WenQuanYi Zen Hei", "ST Heiti", SimHei, "WenQuanYi Zen Hei Sharp", sans-serif, "Hiragino Sans GB";
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+span.beforeSubLoad {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    user-select: none;
+}
+
+button {
+    cursor: pointer;
+}
