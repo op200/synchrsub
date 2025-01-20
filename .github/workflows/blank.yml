@@ -21,14 +21,14 @@ jobs:
           node-version: '18'  # 根据项目需求设置Node.js版本
           cache: 'npm'
 
-      - name: Install pnpm
-        run: npm install -g pnpm
+      - name: Install Yarn
+        run: npm install -g yarn
 
       - name: Install dependencies
-        run: pnpm install
+        run: yarn install
 
       - name: Build project
-        run: pnpm build
+        run: yarn build
 
       - name: Checkout target branch
         uses: actions/checkout@v3
