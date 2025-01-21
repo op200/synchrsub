@@ -197,15 +197,11 @@ type SubRow = {
 }
 
 class SubRowList {
-    val: SubRow[];
-    currentRowIndex: number;
-
     constructor(
-        subRowList: SubRow[],
-        currentRowIndex: number = 0
+        public val: SubRow[],
+        public currentRowIndex: number = 0
     ) {
-        this.val = subRowList;
-        this.currentRowIndex = currentRowIndex;
+
     }
 
     toString() {
@@ -311,11 +307,11 @@ class SubStyle {
 }
 
 class SubStyleList {
+    constructor(
+        public val: SubStyle[],
+        public currentRowIndex: number = 0
+    ) {
 
-    val: SubStyle[];
-
-    constructor(subStyleList: SubStyle[]) {
-        this.val = subStyleList;
     }
 
     toString() {
@@ -349,12 +345,13 @@ class SubInfo {
         public Update_Details: string = '',
         public ScriptType: string = 'v4.00+',
         // Collisions: , SSA 属性，渲染器不支持
-        // PlayResY: any, // ?
-        // PlayResX: any, // ?
-        // PlayDepth: any, // ?
+        public PlayResX: number = 0,
+        public PlayResY: number = 0,
+        public PlayDepth: number = 0,
         // Timer: number, // .4f SSA 属性，无效
         public WrapStyle: '0' | '1' | '2' | '3' = '0',
-        public ScaledBorderAndShadow: 'yes' | 'no' = 'yes'
+        public ScaledBorderAndShadow: 'yes' | 'no' = 'yes',
+        public YCbCr_Matrix: 'None' | 'TV.601' | 'PC.601' | 'TV.709' | 'PC.709' | 'TV.FCC' | 'PC.FCC' | 'TV.240M' | 'PC.240M' = 'None'
     ) {
 
     }
@@ -363,23 +360,33 @@ class SubInfo {
         let dict: { [key: string]: string } = {};
         if (this.Title != '')
             dict['Title'] = this.Title;
-        if (this.Original_Script != '')
+
+        if (this.Original_Script !== '')
             dict['Original Script'] = this.Original_Script;
-        if (this.Original_Translation != '')
+        if (this.Original_Translation !== '')
             dict['Original Translation'] = this.Original_Translation;
-        if (this.Original_Editing != '')
+        if (this.Original_Editing !== '')
             dict['Original Editing'] = this.Original_Editing;
-        if (this.Original_Timing != '')
+        if (this.Original_Timing !== '')
             dict['Original Timing'] = this.Original_Timing;
-        if (this.Synch_Point != '')
+        if (this.Synch_Point !== '')
             dict['Synch Point'] = this.Synch_Point;
-        if (this.Script_Updated_By != '')
+        if (this.Script_Updated_By !== '')
             dict['Script Updated By'] = this.Script_Updated_By;
-        if (this.Update_Details != '')
+        if (this.Update_Details !== '')
             dict['Update Details'] = this.Update_Details;
+
+        if (this.PlayResX !== 0)
+            dict['PlayResX'] = this.PlayResX.toString();
+        if (this.PlayResY !== 0)
+            dict['PlayResY'] = this.PlayResY.toString();
+        if (this.PlayDepth !== 0)
+            dict['PlayDepth'] = this.PlayDepth.toString();
+
         dict['ScriptType'] = this.ScriptType;
         dict['WrapStyle'] = this.WrapStyle;
-        dict['ScaledBorderAndShadow'] = this.ScaledBorderAndShadow ? 'yes' : 'no';
+        dict['ScaledBorderAndShadow'] = this.ScaledBorderAndShadow;
+        dict['YCbCr Matrix'] = this.YCbCr_Matrix;
 
         return this.commentsList.join('\n') + '\n' +
             Object.entries(dict)

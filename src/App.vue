@@ -53,7 +53,7 @@ async function openSub() {
             subtitleFile.value = SubFile.decode(e.target.result as string);
             isSubLoaded.value = true;
             setTimeout(() => {
-              flushAssRender();
+              flushAssRenderer();
             });
           }
         };
@@ -63,24 +63,6 @@ async function openSub() {
   };
 
   input.click(); // 触发点击事件，打开文件选择器
-}
-
-function saveSub() {
-  const content = subtitleFile.value.encode()
-  // 创建一个Blob对象，类型为文本
-  const blob = new Blob([content], { type: 'text/plain' });
-  // 创建一个下载链接
-  const link = document.createElement('a');
-  // 设置链接的href属性为Blob对象的URL
-  link.href = URL.createObjectURL(blob);
-  // 设置下载文件的名称
-  link.download = 'synchrsub.ass';
-  // 将链接添加到文档中
-  document.body.appendChild(link);
-  // 触发链接的点击事件，开始下载
-  link.click();
-  // 下载完成后移除链接
-  document.body.removeChild(link);
 }
 
 // 字幕行选择
@@ -145,16 +127,16 @@ const videoViewTip = ref('视频预览区');
 
 const videoSrc = ref('');
 
-const isFulshAssRenderOk = ref(true)
+const isFulshAssRendererOk = ref(true)
 
 // ASS 渲染库相关变量
 const videoId = 'video';
 const assContainerId = 'ass-container';
-const assRender = ref<ASS>();
+const assRenderer = ref<ASS>();
 
-function loadAssRender() {
+function loadAssRenderer() {
   // if (isSubLoaded.value && isVideoLoaded.value) {
-  assRender.value = new ASS(
+  assRenderer.value = new ASS(
     subtitleFile.value.encode(),
     document.querySelector('#' + videoId) as HTMLVideoElement,
     {
@@ -164,13 +146,13 @@ function loadAssRender() {
   // }
 }
 
-async function flushAssRender() {
-  isFulshAssRenderOk.value = false;
+async function flushAssRenderer() {
+  isFulshAssRendererOk.value = false;
   setTimeout(() => {
-    isFulshAssRenderOk.value = true;
+    isFulshAssRendererOk.value = true;
   });
   setTimeout(() => {
-    loadAssRender();
+    loadAssRenderer();
   });
 }
 
@@ -189,7 +171,7 @@ async function openVideo() {
         videoSrc.value = URL.createObjectURL(file);
         isVideoLoaded.value = true;
         setTimeout(() => {
-          flushAssRender();
+          flushAssRenderer();
         }, 100);
       }
     }
@@ -242,10 +224,7 @@ const switchMuteButtonBackgroundColor = computed(() => {
 });
 
 function switchMute() {
-  if (videoElement.value) {
-    videoElement.value.muted = !videoElement.value.muted;
-    isMuted.value = videoElement.value.muted;
-  }
+  isMuted.value = !isMuted.value;
 }
 
 
@@ -268,10 +247,10 @@ onMounted(() => {
 
   // 视频预览
 
-  loadAssRender();
+  loadAssRenderer();
   watch(subtitleFile, () => {
     if (isSubLoaded.value && isVideoLoaded.value)
-      flushAssRender();
+      flushAssRenderer();
   }, { deep: true });
 });
 
@@ -294,7 +273,6 @@ onBeforeUnmount(() => {
 
     <div class="buttonBar">
       <button @click="openSub" id="openSub">载入字幕</button>
-      <button @click="saveSub" id="saveSub">保存字幕</button>
       <button @click="openVideo" id="openVideo">载入视频</button>
 
       <button @click="isMultiSelectRow = !isMultiSelectRow;" id="multiSelect">选择多行</button>
@@ -370,9 +348,9 @@ onBeforeUnmount(() => {
         <div id="videoView">
           <span v-show="!isVideoLoaded" class="beforeSubLoad">{{ videoViewTip }}</span>
           <div id="player" v-show="isVideoLoaded">
-            <video ref="videoElement" :id="videoId" :src="videoSrc" muted volume="0.1" @timeupdate="flushVideoProgress"
-              @loadedmetadata="flushVideoProgress"></video>
-            <div :id="assContainerId" v-if="isFulshAssRenderOk"></div>
+            <video ref="videoElement" :id="videoId" :src="videoSrc" :muted="isMuted" volume="0.1"
+              @timeupdate="flushVideoProgress" @loadedmetadata="flushVideoProgress"></video>
+            <div :id="assContainerId" v-if="isFulshAssRendererOk"></div>
           </div>
         </div>
 
@@ -439,11 +417,13 @@ onBeforeUnmount(() => {
 
   <div id="panel" v-show="deskClass.deskDefaultWidth">
     <nav>
-      <RouterLink to="/">ASS Info</RouterLink>
+      <RouterLink to="/">ASS Data</RouterLink>
       <RouterLink to="/setting">Setting</RouterLink>
       <RouterLink to="/userlink">User</RouterLink>
     </nav>
-    <RouterView style="height: calc(100% - 1.6rem);width: 100%;" />
+    <div class="routerView">
+      <RouterView />
+    </div>
   </div>
 </template>
 
@@ -524,17 +504,6 @@ onBeforeUnmount(() => {
   >button {
     margin: 1rem;
     margin-right: 0;
-    background-color: rgb(230, 230, 230);
-    border: 1px solid gray;
-    border-radius: 4px;
-  }
-
-  #openSub:hover {
-    background-color: lightgray;
-  }
-
-  #saveSub:hover {
-    background-color: lightgray;
   }
 
   #multiSelect {
@@ -585,7 +554,8 @@ onBeforeUnmount(() => {
   height: calc(90% - 2px - 2rem);
   width: calc(65% - 1.5px - 2rem);
   overflow-x: hidden;
-  overflow-y: scroll;
+  overflow-y: auto;
+  /* scrollbar-width: thin; */
 
   >table {
     width: 100%;
@@ -695,6 +665,7 @@ onBeforeUnmount(() => {
   display: inline-block;
   overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-width: none;
   line-height: 1rem;
   border: 1px solid lightgray;
   border-left-width: 0.5px;
@@ -711,6 +682,7 @@ onBeforeUnmount(() => {
 
 #videoView {
   width: 100%;
+  max-height: calc(80% - 1px);
   aspect-ratio: 16 / 9;
   position: sticky;
   overflow: hidden;
@@ -815,15 +787,18 @@ onBeforeUnmount(() => {
 #panel {
   display: inline-block;
   position: relative;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
   height: 100%;
   width: calc(25% - 1px);
   line-height: 1rem;
 
   >nav {
     height: 1.6rem;
+    width: 100%;
+    position: relative;
     overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
     border-bottom: 1px solid lightgray;
     line-height: 1.6rem;
 
@@ -839,6 +814,13 @@ onBeforeUnmount(() => {
     >*:hover {
       background-color: rgb(226, 226, 226);
     }
+  }
+
+  .routerView {
+    position: relative;
+    height: calc(100% - 1.6rem - 1px);
+    width: 100%;
+    overflow: hidden;
   }
 }
 </style>

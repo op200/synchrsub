@@ -5,8 +5,8 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'assinfo',
-      component: ()=>import('@/views/AssInfo.vue'),
+      name: 'assdata',
+      component: ()=>import('@/views/AssData.vue'),
     },
     {
       path: '/userlink',

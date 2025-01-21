@@ -29,4 +29,13 @@ span.beforeSubLoad {
 
 button {
     cursor: pointer;
+    font-size: 0.84rem;
+    padding: 0.08rem 0.2rem;
+    border: 1px solid gray;
+    background-color: rgb(230, 230, 230);
+    border-radius: 3px;
+}
+
+button:hover {
+    background-color: lightgray;
 }
