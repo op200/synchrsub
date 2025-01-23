@@ -3,6 +3,9 @@ import { ref, onMounted, computed } from 'vue';
 import { useCounterStore } from '@/stores/mainStore';
 import { storeToRefs } from 'pinia';
 
+// 自定义字幕类
+import { SubStyle } from '@/subtitle'
+
 const mainStore = useCounterStore();
 
 
@@ -12,7 +15,7 @@ let { subtitleFile } = storeToRefs(mainStore);
 const isShowAssView = ref(true);
 
 function selectStyleRow(index: number) {
-
+    subtitleFile.value.styleList.currentRowIndex = index;
 }
 
 async function copyAss() {
@@ -64,6 +67,53 @@ const scaledBorderAndShadowModel = computed({
     set: (newVal) => subtitleFile.value.info.ScaledBorderAndShadow = newVal ? 'yes' : 'no'
 });
 
+// style editor
+
+const checkName = computed(() => {
+    if (subtitleFile.value.styleList.val.length === 0) return 'var(--background-color)';
+    return subtitleFile.value.styleList.checkName(subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].Name, subtitleFile.value.styleList.currentRowIndex) ? 'var(--background-color)' : 'red'
+})
+
+const primaryColourHTMLModel = computed({
+    get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].PrimaryColour.getHTMLColor(),
+    set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].PrimaryColour.set(newVal)
+});
+
+const secondaryColourHTMLModel = computed({
+    get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].SecondaryColour.getHTMLColor(),
+    set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].SecondaryColour.set(newVal)
+});
+
+const outlineColourHTMLModel = computed({
+    get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].OutlineColour.getHTMLColor(),
+    set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].OutlineColour.set(newVal)
+});
+
+const backColourHTMLModel = computed({
+    get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].BackColour.getHTMLColor(),
+    set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].BackColour.set(newVal)
+});
+
+const primaryColourAssModel = computed({
+    get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].PrimaryColour.getAssStyleColor(),
+    set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].PrimaryColour.set(newVal)
+});
+
+const secondaryColourAssModel = computed({
+    get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].SecondaryColour.getAssStyleColor(),
+    set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].SecondaryColour.set(newVal)
+});
+
+const outlineColourAssModel = computed({
+    get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].OutlineColour.getAssStyleColor(),
+    set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].OutlineColour.set(newVal)
+});
+
+const backColourAssModel = computed({
+    get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].BackColour.getAssStyleColor(),
+    set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].BackColour.set(newVal)
+});
+
 </script>
 
 
@@ -71,13 +121,12 @@ const scaledBorderAndShadowModel = computed({
 <template>
     <div id="assInfoEditor">
         <span v-show="!isSubLoaded" class="beforeSubLoad">Info 编辑区</span>
-        <div v-show="isSubLoaded" id="assInfoEditorSpace">
+        <div v-if="isSubLoaded" id="assInfoEditorSpace">
 
             <div class="twoOneLine">
                 <label for="info-title">Title</label>
                 <input id="info-title" type="text" v-model="subtitleFile.info.Title" placeholder="Title" />
             </div>
-
 
             <div class="twoOneLine">
                 <label for="info-original-script">Original Script</label>
@@ -149,7 +198,7 @@ const scaledBorderAndShadowModel = computed({
                 <label for="editToWrapStyle" class="editToWrapStyle">Wrap Style</label>
                 <select v-model="subtitleFile.info.WrapStyle" id="editToWrapStyle">
                     <option value="0">0: 智能换行，上行较宽</option>
-                    <option value="1">1: 尾词换行，仅 \N 能强制换行</option>
+                    <option value="1">1: 尾词换行，仅 \N 强制换行</option>
                     <option value="2">2: 不换行，\n 和 \N 强制换行</option>
                     <option value="3">3: 智能换行，下行较宽</option>
                 </select>
@@ -164,30 +213,221 @@ const scaledBorderAndShadowModel = computed({
 
     <div id="assStylesEditor">
         <span v-show="!isSubLoaded" class="beforeSubLoad">Styles 编辑区</span>
-        <div v-show="isSubLoaded">
+        <div v-if="isSubLoaded" style="width: 100%;height: 100%;position: relative;">
             <div class="bar">
-                <button @click="" id="moveStyleUp" title="Move style up">
+                <label>Styles</label>
+                <button @click="subtitleFile.styleList.moveUp" id="moveStyleUp" title="Move style up">
                     <img src="@/assets/arrow.svg"></button>
-                <button @click="" id="moveStyleDown" title="Move style down">
+                <button @click="subtitleFile.styleList.moveDown" id="moveStyleDown" title="Move style down">
                     <img src="@/assets/arrow.svg"></button>
-                <button @click="" id="delStyle" title="Delete style">Del</button>
-                <button @click="" id="newStyle" title="Create new style">New</button>
+                <button @click="subtitleFile.styleList.delect" id="delStyle" title="Delete style">Del</button>
+                <button @click="subtitleFile.styleList.insert(new SubStyle('New' + Date.now()))" id="newStyle"
+                    title="Create new style">New</button>
             </div>
 
+            <div id="assStylesEditSpace">
+                <div id="assStylesListView">
+                    <span v-for="(item, index) in subtitleFile.styleList.val" @click="selectStyleRow(index)" :class="{
+                        selected: index === subtitleFile.styleList.currentRowIndex
+                    }">{{ item.Name }}
+                    </span>
+                </div>
 
-            <tr v-for="(item, index) in subtitleFile.styleList.val" @click="selectStyleRow(index)" :class="{}">
-                {{ item.Name }}
-            </tr>
+                <div id="assStylesListDetail">
+                    <!-- Name -->
+                    <div class="textLine">
+                        <label for="style-name">Name</label>
+                        <input id="style-name" type="text"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].Name">
+                    </div>
+                    <!-- Fontname -->
+                    <div class="textLine">
+                        <label for="style-fontname">Fontname</label>
+                        <input id="style-fontname" type="text"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].Fontname">
+                    </div>
+                    <!-- Fontsize -->
+                    <div class="textLine">
+                        <label for="style-fontsize">Fontsize</label>
+                        <input id="style-fontsize" type="number" min="0" step="1"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].Fontsize">
+                    </div>
+                    <!-- PrimaryColour -->
+                    <div class="colorLine" for="style-primary-colour">
+                        <label for="style-primary-colour">Primary Colour</label>
+                        <input id="style-primary-colour" type="color" v-model="primaryColourHTMLModel">
+                        <input type="number" min="0" max="255" step="1" title="Alpha"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].PrimaryColour.a">
+                        <input type="text" title="HTML color" v-model="primaryColourHTMLModel">
+                        <input type="text" title="ASS style color" v-model="primaryColourAssModel">
+                    </div>
+                    <!-- SecondaryColour -->
+                    <div class="colorLine">
+                        <label for="style-secondary-colour">Secondary Colour</label>
+                        <input id="style-secondary-colour" type="color" v-model="secondaryColourHTMLModel">
+                        <input type="number" min="0" max="255" step="1" title="Alpha"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].SecondaryColour.a">
+                        <input type="text" title="HTML color" v-model="secondaryColourHTMLModel">
+                        <input type="text" title="ASS style color" v-model="secondaryColourAssModel">
+                    </div>
+                    <!-- OutlineColour -->
+                    <div class="colorLine">
+                        <label for="style-outline-colour">Outline Colour</label>
+                        <input id="style-outline-colour" type="color" v-model="outlineColourHTMLModel">
+                        <input type="number" min="0" max="255" step="1" title="Alpha"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].OutlineColour.a">
+                        <input type="text" title="HTML color" v-model="outlineColourHTMLModel">
+                        <input type="text" title="ASS style color" v-model="outlineColourAssModel">
+                    </div>
+                    <!-- BackColour -->
+                    <div class="colorLine">
+                        <label for="style-back-colour">Back Colour</label>
+                        <input id="style-back-colour" type="color" v-model="backColourHTMLModel">
+                        <input type="number" min="0" max="255" step="1" title="Alpha"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].BackColour.a">
+                        <input type="text" title="HTML color" v-model="backColourHTMLModel">
+                        <input type="text" title="ASS style color" v-model="backColourAssModel">
+                    </div>
+                    <!-- Bold -->
+                    <div class="checkboxLine">
+                        <label for="style-bold">Bold</label>
+                        <div>
+                            <input id="style-bold" type="checkbox"
+                                v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].Bold">
+                        </div>
 
-            <div id="assStylesEditorSpace">
+                    </div>
+                    <!-- Italic -->
+                    <div class="checkboxLine">
+                        <label for="style-italic">Italic</label>
+                        <div>
+                            <input id="style-italic" type="checkbox"
+                                v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].Italic">
+                        </div>
 
+                    </div>
+                    <!-- Underline -->
+                    <div class="checkboxLine">
+                        <label for="style-underline">Underline</label>
+                        <div>
+                            <input id="style-underline" type="checkbox"
+                                v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].Underline">
+                        </div>
+
+                    </div>
+                    <!-- StrikeOut -->
+                    <div class="checkboxLine">
+                        <label for="style-strikeout">StrikeOut</label>
+                        <div>
+                            <input id="style-strikeout" type="checkbox"
+                                v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].StrikeOut">
+                        </div>
+
+                    </div>
+                    <!-- ScaleX -->
+                    <div class="numberLine">
+                        <label for="style-scale-x">ScaleX</label>
+                        <input id="style-scale-x" type="number" min="0"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].ScaleX">
+                    </div>
+                    <!-- ScaleY -->
+                    <div class="numberLine">
+                        <label for="style-scale-y">ScaleY</label>
+                        <input id="style-scale-y" type="number" min="0"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].ScaleY">
+                    </div>
+                    <!-- Spacing -->
+                    <div class="numberLine">
+                        <label for="style-spacing">Spacing</label>
+                        <input id="style-spacing" type="number" min="0"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].Spacing">
+                    </div>
+                    <!-- Angle -->
+                    <div class="numberLine">
+                        <label for="style-angle">Angle</label>
+                        <input id="style-angle" type="number"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].Angle">
+                    </div>
+                    <!-- BorderStyle -->
+                    <div class="numberLine">
+                        <label for="style-border-style">BorderStyle</label>
+                        <select id="style-border-style"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].BorderStyle">
+                            <option :value="1">1</option>
+                            <option :value="3">3</option>
+                        </select>
+                    </div>
+                    <!-- Outline -->
+                    <div class="numberLine">
+                        <label for="style-outline">Outline</label>
+                        <input id="style-outline" type="number" min="0" step="1"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].Outline">
+                    </div>
+                    <!-- Shadow -->
+                    <div class="numberLine">
+                        <label for="style-shadow">Shadow</label>
+                        <input id="style-shadow" type="number" min="0" step="1"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].Shadow">
+                    </div>
+                    <!-- Alignment -->
+                    <div class="numberLine">
+                        <label for="style-alignment">Alignment</label>
+                        <input id="style-alignment" type="number" min="1" max="9" step="1"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].Alignment">
+                    </div>
+                    <!-- MarginL -->
+                    <div class="numberLine">
+                        <label for="style-margin-l">MarginL</label>
+                        <input id="style-margin-l" type="number" min="0" step="1"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].MarginL">
+                    </div>
+                    <!-- MarginR -->
+                    <div class="numberLine">
+                        <label for="style-margin-r">MarginR</label>
+                        <input id="style-margin-r" type="number" min="0" step="1"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].MarginR">
+                    </div>
+                    <!-- MarginV -->
+                    <div class="numberLine">
+                        <label for="style-margin-v">MarginV</label>
+                        <input id="style-margin-v" type="number" min="0" step="1"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].MarginV">
+                    </div>
+                    <!-- Encoding -->
+                    <div class="numberLine">
+                        <label for="style-encoding">Encoding</label>
+                        <select id="style-encoding"
+                            v-model="subtitleFile.styleList.val[subtitleFile.styleList.currentRowIndex].Encoding">
+                            <option :value="-1">-1. 自动检测文本书写方向 (libass)</option>
+                            <option :value="0">0. ANSI</option>
+                            <option :value="1">1. Default</option>
+                            <option :value="2">2. Symbol</option>
+                            <option :value="77">77. Mac</option>
+                            <option :value="128">128. Shift JIS</option>
+                            <option :value="129">129. Hangul</option>
+                            <option :value="130">130. Johab</option>
+                            <option :value="134">134. GB2312</option>
+                            <option :value="136">136. Chinese Big5</option>
+                            <option :value="161">161. Greek</option>
+                            <option :value="162">162. Turkish</option>
+                            <option :value="163">163. Vietnamese</option>
+                            <option :value="177">177. Hebrew</option>
+                            <option :value="178">178. Arabic</option>
+                            <option :value="186">186. Baltic</option>
+                            <option :value="204">204. Russian</option>
+                            <option :value="222">222. Thai</option>
+                            <option :value="238">238. Eastern European</option>
+                            <option :value="255">255. OEM</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="assView" v-if="isShowAssView">
         <span v-show="!isSubLoaded" class="beforeSubLoad">文本预览区</span>
-        <div v-show="isSubLoaded">
+        <div v-if="isSubLoaded">
             <div class="bar">
                 <label>ASS</label>
                 <button @click="">编辑</button>
@@ -203,103 +443,7 @@ const scaledBorderAndShadowModel = computed({
 
 
 <style scoped>
-#assInfoEditor {
-    position: relative;
-    height: calc(30% - 2px);
-    width: 100%;
-    display: inline-block;
-    position: relative;
-    overflow-x: hidden;
-    overflow-y: auto;
-    scrollbar-width: thin;
-
-    border-bottom: 1px solid lightgray;
-
-    #assInfoEditorSpace {
-        display: flex;
-        flex-direction: column;
-        gap: 0.3rem;
-        padding: 0.4rem;
-
-        .threeOneLine {
-            width: 100%;
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            align-items: center;
-
-            >* {
-                width: calc(31% - 2px - 1rem);
-            }
-        }
-
-        .twoOneLine {
-            width: 100%;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-
-            >* {
-                width: calc(50% - 2px - 1rem);
-            }
-
-            label {
-                white-space: nowrap;
-            }
-
-            label.editToWrapStyle {
-                width: 6rem;
-            }
-
-            #editToWrapStyle {
-                width: 13rem;
-            }
-        }
-
-        .editToPlayRes {
-            appearance: textfield;
-        }
-    }
-}
-
-#assStylesEditor {
-    position: relative;
-    height: calc(40% - 2px);
-    width: 100%;
-    display: inline-block;
-    overflow: hidden;
-    border-bottom: 1px solid lightgray;
-}
-
-#assView {
-    position: relative;
-    height: calc(30% - 1px);
-    width: 100%;
-    overflow: hidden;
-    display: inline-block;
-
-    >div {
-        position: relative;
-        height: 100%;
-        width: 100%;
-        overflow: hidden;
-        display: inline-block;
-
-        >span {
-            display: inline-block;
-            height: calc(100% - 2rem - 21px);
-            width: calc(100% - 0.4rem);
-            overflow-x: hidden;
-            overflow-y: auto;
-            padding: 0.4rem;
-            padding-right: 0;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-    }
-}
+/* global */
 
 div.bar {
     position: relative;
@@ -350,6 +494,257 @@ div.bar {
         position: absolute;
         left: 0.18rem;
         top: 0.17rem;
+    }
+}
+
+/* info */
+
+#assInfoEditor {
+    position: relative;
+    height: calc(30% - 2px);
+    width: 100%;
+    display: inline-block;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+
+    border-bottom: 1px solid lightgray;
+
+    #assInfoEditorSpace {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        padding: 0.4rem;
+
+        .threeOneLine {
+            width: 100%;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+
+            >* {
+                width: calc(31% - 2px - 1rem);
+            }
+        }
+
+        .twoOneLine {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+
+            >* {
+                width: calc(50% - 2px - 1rem);
+            }
+
+            label {
+                white-space: nowrap;
+                text-align: right;
+                padding-right: 0.5rem;
+            }
+
+            input {
+                padding-left: 0.5rem;
+            }
+
+            label.editToWrapStyle {
+                width: 6rem;
+            }
+
+            #editToWrapStyle {
+                width: 12.5rem;
+            }
+        }
+
+        .editToPlayRes {
+            appearance: textfield;
+        }
+    }
+}
+
+/* style */
+
+#assStylesEditor {
+    position: relative;
+    height: calc(40% - 2px);
+    width: 100%;
+    display: inline-block;
+    overflow: hidden;
+    border-bottom: 1px solid lightgray;
+
+    #assStylesEditSpace {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        height: calc(100% - 20px - 1.2rem);
+        padding: 0;
+        overflow: hidden;
+
+        #assStylesListView {
+            background-color: v-bind(checkName);
+
+            position: relative;
+            height: calc(30% - 1px - 0.8rem);
+            padding: 0.4rem;
+            border-bottom: 1px solid lightgray;
+
+            display: flex;
+            flex-wrap: wrap;
+            column-gap: 0.7rem;
+            row-gap: 0.5rem;
+            align-content: flex-start;
+
+            user-select: none;
+            overflow-y: auto;
+            scrollbar-width: thin;
+
+            >span {
+                display: inline-block;
+                height: 1rem;
+                font-size: 1rem;
+                border: 1px solid gray;
+                border-radius: 4px;
+                white-space: nowrap;
+                padding: 0.2rem 0.3rem;
+                cursor: pointer;
+                background-color: var(--background-color);
+            }
+
+            >span:hover {
+                background-color: lightgray;
+            }
+
+            >span.selected {
+                background-color: lightgray;
+            }
+        }
+
+        #assStylesListDetail {
+            position: relative;
+            width: calc(100% - 0.8rem);
+            height: calc(70% - 0.8rem);
+            padding: 0.4rem;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            user-select: none;
+
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+
+            .textLine {
+                display: flex;
+                gap: 0.3rem;
+                align-items: center;
+
+                label {
+                    width: 8rem;
+                    white-space: nowrap;
+                    text-align: right;
+                }
+
+                input {
+                    display: inline;
+                    width: calc(100% - 8rem);
+                }
+            }
+
+            .colorLine {
+                display: flex;
+                gap: 0.3rem;
+                align-items: center;
+                width: 100%;
+
+                label {
+                    text-align: right;
+                    width: 50%;
+                    min-width: fit-content;
+                    white-space: nowrap;
+                }
+
+                input {
+                    display: inline;
+                    min-width: 2rem;
+                    width: fit-content;
+                    padding: 1px 2px;
+
+                }
+            }
+
+            .checkboxLine {
+                display: flex;
+                gap: 0.3rem;
+                align-items: center;
+
+                label {
+                    text-align: right;
+                    width: 50%;
+                    white-space: nowrap;
+                }
+
+                >div {
+                    width: 50%;
+                    height: 100%;
+
+                    >input {
+                        display: inline;
+                        width: 100%;
+                    }
+                }
+            }
+
+            .numberLine {
+                display: flex;
+                gap: 0.3rem;
+                align-items: center;
+
+                label {
+                    text-align: right;
+                    width: 8rem;
+                    white-space: nowrap;
+                }
+
+                input {
+                    display: inline;
+                    width: calc(100% - 8rem);
+                }
+            }
+        }
+    }
+}
+
+/* view */
+
+#assView {
+    position: relative;
+    height: calc(30% - 1px);
+    width: 100%;
+    overflow: hidden;
+    display: inline-block;
+
+    >div {
+        position: relative;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        display: inline-block;
+
+        >span {
+            display: inline-block;
+            height: calc(100% - 2rem - 21px);
+            width: calc(100% - 0.4rem);
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 0.4rem;
+            padding-right: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
     }
 }
 </style>

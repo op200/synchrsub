@@ -247,15 +247,60 @@ class SubRowList {
     }
 }
 
+class SubColor {
+    constructor(
+        public r: number = 0,
+        public g: number = 0,
+        public b: number = 0,
+        public a: number = 0
+    ) {
+
+    }
+
+    set(input: string): SubColor {
+        if (input.startsWith('&') || input.endsWith('&')) {
+            for (; input.endsWith('&'); input = input.slice(0, -1));
+
+            let a = input.slice(-8, -4);
+            if (a && a.length === 2)
+                this.a = parseInt(a, 16);
+            this.b = parseInt(input.slice(-6, -4), 16);
+            this.g = parseInt(input.slice(-4, -2), 16);
+            this.r = parseInt(input.slice(-2), 16);
+        }
+        else if (input.startsWith('#')) {
+            this.r = parseInt(input.slice(-6, -4), 16);
+            this.g = parseInt(input.slice(-4, -2), 16);
+            this.b = parseInt(input.slice(-2), 16);
+        }
+
+        return this;
+    }
+
+    /**
+     * @returns #RRGGBB
+     */
+    getHTMLColor() {
+        return `#${this.r.toString(16).toUpperCase().padStart(2, '0')}${this.g.toString(16).toUpperCase().padStart(2, '0')}${this.b.toString(16).toUpperCase().padStart(2, '0')}`;
+    }
+
+    /**
+     * @returns &HAABBGGRR
+     */
+    getAssStyleColor() {
+        return `&H${this.a.toString(16).toUpperCase().padStart(2, '0')}${this.b.toString(16).toUpperCase().padStart(2, '0')}${this.g.toString(16).toUpperCase().padStart(2, '0')}${this.r.toString(16).toUpperCase().padStart(2, '0')}`;
+    }
+}
+
 class SubStyle {
     constructor(
         public Name: string = 'Default',
         public Fontname: string = '',
         public Fontsize: number = 64,
-        public PrimaryColour: string = '&HFFFFFF&',
-        public SecondaryColour: string = '&H0000FF&',
-        public OutlineColour: string = '&H000000&',
-        public BackColour: string = '&H000000&',
+        public PrimaryColour: SubColor = new SubColor(255, 255, 255),
+        public SecondaryColour: SubColor = new SubColor(255, 0, 0),
+        public OutlineColour: SubColor = new SubColor(0, 0, 0),
+        public BackColour: SubColor = new SubColor(0, 0, 0),
         public Bold: boolean = false,
         public Italic: boolean = false,
         public Underline: boolean = false,
@@ -266,7 +311,7 @@ class SubStyle {
         public Angle: number = 0,
         public BorderStyle: 1 | 3 = 1,
         public Outline: number = 2,
-        public Shadow: number = 2,
+        public Shadow: number = 0,
         public Alignment: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 = 2,
         public MarginL: number = 10,
         public MarginR: number = 10,
@@ -282,10 +327,10 @@ class SubStyle {
                 this.Name,
                 this.Fontname,
                 this.Fontsize,
-                this.PrimaryColour,
-                this.SecondaryColour,
-                this.OutlineColour,
-                this.BackColour,
+                this.PrimaryColour.getAssStyleColor(),
+                this.SecondaryColour.getAssStyleColor(),
+                this.OutlineColour.getAssStyleColor(),
+                this.BackColour.getAssStyleColor(),
                 this.Bold ? '-1' : '0',
                 this.Italic ? '-1' : '0',
                 this.Underline ? '-1' : '0',
@@ -318,17 +363,65 @@ class SubStyleList {
         return this.val.map(style => style.toString()).join('\n') + '\n';
     }
 
-    insert(style: SubStyle, index: number = 0) {
-        // 样式名不能重复
-        let isRepeated: boolean = false;
-        for (const item of this.val) {
-            if (item.Name == style.Name) {
-                isRepeated = true;
-                break;
+    /**
+     * check if name exists or not
+     * @param name
+     * @returns res ? pass : exists same name
+     */
+    checkName(name: string, excludeIndex: number = -1) {
+        if (name === '') return false;
+
+        if (excludeIndex >= 0)
+            for (const [index, item] of this.val.entries()) {
+                if (index === excludeIndex)
+                    continue;
+                if (item.Name === name)
+                    return false;
             }
+        else
+            for (const item of this.val)
+                if (item.Name === name) {
+                    return false;
+                }
+
+        return true;
+    }
+
+    insert(style: SubStyle, index: number = this.val.length) {
+        if (!this.checkName(style.Name)) {
+            console.warn(`Style with name ${style.Name} already exists.`);
+            return;
         }
-        if (!isRepeated)
-            this.val.splice(index, 0, style);
+
+        this.val.splice(index, 0, style);
+    }
+
+    moveUp() {
+        if (this.currentRowIndex === 0) return;
+
+        [this.val[this.currentRowIndex - 1], this.val[this.currentRowIndex]] = [this.val[this.currentRowIndex], this.val[this.currentRowIndex - 1]];
+        --this.currentRowIndex;
+    }
+
+    moveDown() {
+        if (this.currentRowIndex === this.val.length - 1) return;
+
+        [this.val[this.currentRowIndex + 1], this.val[this.currentRowIndex]] = [this.val[this.currentRowIndex], this.val[this.currentRowIndex + 1]];
+        ++this.currentRowIndex;
+    }
+
+    delect() {
+        if (this.val.length === 0) return;
+        if (this.currentRowIndex >= this.val.length) {
+            console.error("Current row index is out of bounds");
+            return;
+        }
+
+        this.val.splice(this.currentRowIndex, 1);
+        if (this.currentRowIndex === 0)
+            return;
+        else
+            --this.currentRowIndex;
     }
 }
 
@@ -435,7 +528,7 @@ class SubFile {
                 break;
 
             const headIndex = line.indexOf(':');
-            if (line.slice(0, headIndex) == 'Style') {
+            if (line.slice(0, headIndex) === 'Style') {
                 const arr = line
                     .slice(headIndex + 1)
                     .split(',')
@@ -444,14 +537,14 @@ class SubFile {
                     arr[0], // Name
                     arr[1], // Fontname
                     Number(arr[2]), // Fontsize
-                    arr[3], // PrimaryColour
-                    arr[4], // SecondaryColour
-                    arr[5], // OutlineColour
-                    arr[6], // BackColour
-                    arr[7] == '0' ? false : true, // Bold
-                    arr[8] == '0' ? false : true, // Italic
-                    arr[9] == '0' ? false : true, // Underline
-                    arr[10] == '0' ? false : true, // StrikeOut
+                    new SubColor().set(arr[3]), // PrimaryColour
+                    new SubColor().set(arr[4]), // SecondaryColour
+                    new SubColor().set(arr[5]), // OutlineColour
+                    new SubColor().set(arr[6]), // BackColour
+                    arr[7] === '0' ? false : true, // Bold
+                    arr[8] === '0' ? false : true, // Italic
+                    arr[9] === '0' ? false : true, // Underline
+                    arr[10] === '0' ? false : true, // StrikeOut
                     Number(arr[11]), // ScaleX
                     Number(arr[12]), // ScaleY
                     Number(arr[13]), // Spacing
@@ -474,7 +567,7 @@ class SubFile {
 
             const headIndex = line.indexOf(':');
 
-            if (headIndex == -1)
+            if (headIndex === -1)
                 break;
 
             const arr = line.slice(headIndex + 1).split(',').map(str => str.trim());
@@ -517,4 +610,4 @@ class SubFile {
     }
 }
 
-export { Sub, SubFile };
+export { Sub, SubStyle, SubFile };
