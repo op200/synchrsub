@@ -495,15 +495,20 @@ onBeforeUnmount(() => {
 /* button bar */
 
 .buttonBar {
-  display: inline-block;
-  width: calc(100% - 1.5px - 4rem);
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  width: calc(100% - 2px - 5rem);
+  padding: 0.5rem;
   height: 15%;
   border: 1px solid lightgray;
   margin: 1rem 2rem;
+  overflow-y: auto;
 
-  >button {
-    margin: 1rem;
-    margin-right: 0;
+  >* {
+    display: inline-block;
+    min-width: fit-content;
   }
 
   #multiSelect {
@@ -516,8 +521,8 @@ onBeforeUnmount(() => {
 
   #videoProgress {
     display: flex;
-    width: calc(100% - 2rem);
-    margin: 0 1rem;
+    flex-wrap: wrap;
+    width: 100%;
 
     >input {
       display: inline-block;
@@ -526,11 +531,21 @@ onBeforeUnmount(() => {
 
     >span {
       display: inline-block;
-      width: auto;
       height: 100%;
+      line-height: normal;
       text-align: center;
       margin: auto;
       padding: 0;
+    }
+
+    @media (aspect-ratio < 1) {
+      >input {
+        width: 100%;
+      }
+
+      >span {
+        width: 100%;
+      }
     }
   }
 }
