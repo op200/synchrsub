@@ -267,6 +267,8 @@ onBeforeUnmount(() => {
 
 <template>
   <div id="desk" :class="deskClass">
+
+
     <button id="deskClassSwitchButton" @click="switchWidth">
       <img src="@/assets/arrow.svg">
     </button>
@@ -295,7 +297,6 @@ onBeforeUnmount(() => {
 
 
     <div class="workSpace">
-
 
       <div class="subViewSpace">
         <table v-show="isSubLoaded">
@@ -341,7 +342,6 @@ onBeforeUnmount(() => {
         </table>
         <span v-show="!isSubLoaded" class="beforeSubLoad">{{ subViewTip }}</span>
       </div>
-
 
       <div class="editorSpace">
 
@@ -409,9 +409,10 @@ onBeforeUnmount(() => {
 
 
       </div>
+
     </div>
-    <!-- <div class="buttonNav">
-    </div> -->
+
+
   </div>
 
 
@@ -501,7 +502,7 @@ onBeforeUnmount(() => {
   gap: 0.2rem;
   width: calc(100% - 2px - 5rem);
   padding: 0.5rem;
-  height: 15%;
+  height: calc(15% - 2px);
   border: 1px solid lightgray;
   margin: 1rem 2rem;
   overflow-y: auto;
@@ -555,9 +556,43 @@ onBeforeUnmount(() => {
 .workSpace {
   display: flex;
   flex-wrap: nowrap;
-  height: 90%;
-  width: 100%;
+  height: calc(85% - 5rem - 1px);
+  width: calc(100% - 4rem - 1px);
+  margin: 0 0 2rem 2rem;
 }
+
+@media (aspect-ratio < 1) {
+  .workSpace {
+    flex-wrap: wrap;
+    align-items: flex-start;
+
+    >.subViewSpace {
+      width: 100%;
+      height: calc(50% - 1px);
+      border-width: 0.5px 1px 1px;
+
+      .tText {
+        /* min-width: 50%; */
+      }
+    }
+
+    >.editorSpace {
+      width: 100%;
+      height: 50%;
+      order: -1;
+      border-width: 1px 1px 0.5px;
+
+      >#videoView {}
+
+      >#assEditor {
+        .editorBar {
+          gap: 0.1rem;
+        }
+      }
+    }
+  }
+}
+
 
 .subViewSpace {
   display: inline-block;
@@ -565,9 +600,8 @@ onBeforeUnmount(() => {
   line-height: 1rem;
   border: 1px solid lightgray;
   border-right-width: 0.5px;
-  margin: 0 0 2rem 2rem;
-  height: calc(90% - 2px - 2rem);
-  width: calc(65% - 1.5px - 2rem);
+  height: 100%;
+  width: calc(65% - 1.5px);
   overflow-x: hidden;
   overflow-y: auto;
   /* scrollbar-width: thin; */
@@ -677,16 +711,17 @@ onBeforeUnmount(() => {
 }
 
 .editorSpace {
-  display: inline-block;
+  display: flex;
+  align-content: flex-start;
+  flex-wrap: wrap;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: none;
   line-height: 1rem;
   border: 1px solid lightgray;
   border-left-width: 0.5px;
-  margin: 0 2rem 2rem 0;
-  height: calc(90% - 2px - 2rem);
-  width: calc(35% - 1.5px - 2rem);
+  height: 100%;
+  width: calc(35% - 1.5px);
 
   >div {
     width: 100%;
@@ -696,9 +731,12 @@ onBeforeUnmount(() => {
 }
 
 #videoView {
+  background-color: var(--background-color);
+  display: block;
   width: 100%;
-  max-height: calc(80% - 1px);
   aspect-ratio: 16 / 9;
+  height: fit-content;
+  max-height: calc(80% - 1px);
   position: sticky;
   overflow: hidden;
   top: 0;
