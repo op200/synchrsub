@@ -1,6 +1,6 @@
 {
   "name": "synchrsub",
-  "version": "0.0.3_b+2",
+  "version": "0.0.3_b+3",
   "private": true,
   "type": "module",
   "scripts": {

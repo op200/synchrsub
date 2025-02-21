@@ -303,8 +303,9 @@ onBeforeUnmount(() => {
           <colgroup>
             <col class="tNum">
             <col class="tLayer" v-show="isShowLayer">
-            <col class="tStart">
-            <col class="tEnd">
+            <!-- <col class="tStart">
+            <col class="tEnd"> -->
+            <col class="tTime">
             <col class="tStyle">
             <col class="tActor" v-show="isShowActor">
             <col class="tEffect" v-show="isShowEffect">
@@ -314,8 +315,9 @@ onBeforeUnmount(() => {
             <tr>
               <th class="tNum">#</th>
               <th class="tLayer" v-show="isShowLayer">L</th>
-              <th class="tStart">Start</th>
-              <th class="tEnd">End</th>
+              <!-- <th class="tStart">Start</th>
+              <th class="tEnd">End</th> -->
+              <th class="tTime">Time</th>
               <th class="tStyle">Style</th>
               <th class="tActor" v-show="isShowActor">Actor</th>
               <th class="tEffect" v-show="isShowEffect">Effect</th>
@@ -331,8 +333,9 @@ onBeforeUnmount(() => {
             }">
               <td class="tNum">{{ index + 1 }}</td>
               <td class="tLayer" v-show="isShowLayer">{{ item.sub['Layer'] === 0 ? '' : item.sub['Layer'] }}</td>
-              <td class="tStart">{{ item.sub.getStartStr() }}</td>
-              <td class="tEnd">{{ item.sub.getEndStr() }}</td>
+              <!-- <td class="tStart">{{ item.sub.getStartStr() }}</td>
+              <td class="tEnd">{{ item.sub.getEndStr() }}</td> -->
+              <td class="tTime">{{ item.sub.getStartStr() }}<br>{{ item.sub.getEndStr() }}</td>
               <td class="tStyle">{{ item.sub['Style'] }}</td>
               <td class="tActor" v-show="isShowActor">{{ item.sub['Actor'] }}</td>
               <td class="tEffect" v-show="isShowEffect">{{ item.sub['Effect'] }}</td>
@@ -506,6 +509,7 @@ onBeforeUnmount(() => {
   border: 1px solid lightgray;
   margin: 1rem 2rem;
   overflow-y: auto;
+  scrollbar-width: thin;
 
   >* {
     display: inline-block;
@@ -538,16 +542,62 @@ onBeforeUnmount(() => {
       margin: auto;
       padding: 0;
     }
+  }
+}
 
-    @media (aspect-ratio < 1) {
+@media (aspect-ratio < 1) {
+  .buttonBar {
+    height: calc(10% - 2px);
+
+    button {
+      font-size: 0.7rem;
+      padding: 0.05rem 0.15rem;
+    }
+
+    #videoProgress {
       >input {
         width: 100%;
+        height: 0.5rem;
+      }
+
+
+      >input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 0.3rem;
+        height: 0.9rem;
+        border: 1px solid lightgray;
+        cursor: pointer;
+      }
+
+      >input[type="range"]::-moz-range-thumb {
+        width: 0.3rem;
+        height: 0.9rem;
+        /* border-width: 1px; */
+        cursor: pointer;
+      }
+
+      >input[type="range"]::-moz-range-progress {
+        background: lightgray;
+      }
+
+      >input[type="range"]::-ms-thumb {
+        width: 0.3rem;
+        height: 0.9rem;
+        border-width: 1px;
+        cursor: pointer;
       }
 
       >span {
         width: 100%;
+        height: 50%;
+        font-size: 0.7rem;
+        line-height: 1.3rem;
       }
     }
+  }
+
+  .workSpace {
+    height: calc(90% - 5rem - 1px);
   }
 }
 
@@ -677,6 +727,10 @@ onBeforeUnmount(() => {
     }
 
     .tEnd {
+      text-align: center;
+    }
+
+    .tTime {
       text-align: center;
     }
 
@@ -874,6 +928,16 @@ onBeforeUnmount(() => {
     height: calc(100% - 1.6rem - 1px);
     width: 100%;
     overflow: hidden;
+  }
+}
+
+@media (aspect-ratio < 1) {
+  #panel {
+    width: calc(100% - 1rem - 2px);
+  }
+
+  .deskDefaultWidth {
+    width: calc(1rem + 1px);
   }
 }
 </style>
