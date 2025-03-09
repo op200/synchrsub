@@ -441,6 +441,8 @@ class SubInfo {
         public PlayResX: number = 0,
         public PlayResY: number = 0,
         public PlayDepth: number = 0,
+        public LayoutResX: number = 0,
+        public LayoutResY: number = 0,
         // Timer: number, // .4f SSA 属性，无效
         public WrapStyle: '0' | '1' | '2' | '3' = '0',
         public ScaledBorderAndShadow: 'yes' | 'no' = 'yes',
@@ -475,6 +477,10 @@ class SubInfo {
             dict['PlayResY'] = this.PlayResY.toString();
         if (this.PlayDepth !== 0)
             dict['PlayDepth'] = this.PlayDepth.toString();
+        if (this.LayoutResX !== 0)
+            dict['LayoutResX'] = this.LayoutResX.toString();
+        if (this.LayoutResY !== 0)
+            dict['LayoutResY'] = this.LayoutResY.toString();
 
         dict['ScriptType'] = this.ScriptType;
         dict['WrapStyle'] = this.WrapStyle;
@@ -516,7 +522,7 @@ class SubFile {
                 info.commentsList.push(line);
             else {
                 const arr = line.split(':').map(str => str.trim());
-                const key = arr[0] as 'Title'; // 下文有if判断，所以直接断言，不然会报弱智错误
+                const key = arr[0] as 'Title'; // 下文有if判断，所以直接断言
                 if (key in info)
                     info[key] = arr.slice(1).join(':').trim();
             }

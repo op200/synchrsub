@@ -49,22 +49,32 @@ async function saveSub() {
 
 const playResXModel = computed({
     get: () => subtitleFile.value.info.PlayResX === 0 ? '' : subtitleFile.value.info.PlayResX,
-    set: (newVal) => subtitleFile.value.info.PlayResX = newVal ? Number(newVal) : 0
+    set: newVal => subtitleFile.value.info.PlayResX = newVal ? Number(newVal) : 0
 });
 
 const playResYModel = computed({
     get: () => subtitleFile.value.info.PlayResY === 0 ? '' : subtitleFile.value.info.PlayResY,
-    set: (newVal) => subtitleFile.value.info.PlayResY = newVal ? Number(newVal) : 0
+    set: newVal => subtitleFile.value.info.PlayResY = newVal ? Number(newVal) : 0
 });
 
 const playDepthModel = computed({
     get: () => subtitleFile.value.info.PlayDepth === 0 ? '' : subtitleFile.value.info.PlayDepth,
-    set: (newVal) => subtitleFile.value.info.PlayDepth = newVal ? Number(newVal) : 0
+    set: newVal => subtitleFile.value.info.PlayDepth = newVal ? Number(newVal) : 0
+});
+
+const layoutResXModel = computed({
+    get: () => subtitleFile.value.info.LayoutResX === 0 ? '' : subtitleFile.value.info.LayoutResX,
+    set: newVal => subtitleFile.value.info.LayoutResX = newVal ? Number(newVal) : 0
+});
+
+const layoutResYModel = computed({
+    get: () => subtitleFile.value.info.LayoutResY === 0 ? '' : subtitleFile.value.info.LayoutResY,
+    set: newVal => subtitleFile.value.info.LayoutResY = newVal ? Number(newVal) : 0
 });
 
 const scaledBorderAndShadowModel = computed({
     get: () => subtitleFile.value.info.ScaledBorderAndShadow === 'yes',
-    set: (newVal) => subtitleFile.value.info.ScaledBorderAndShadow = newVal ? 'yes' : 'no'
+    set: newVal => subtitleFile.value.info.ScaledBorderAndShadow = newVal ? 'yes' : 'no'
 });
 
 // style editor
@@ -128,6 +138,53 @@ const backColourAssModel = computed({
                 <input id="info-title" type="text" v-model="subtitleFile.info.Title" placeholder="Title" />
             </div>
 
+            <div class="threeOneLine">
+                <input id="info-play-res-x" type="number" min="0" step="1" class="editToPlayRes" v-model="playResXModel"
+                    placeholder="PlayResX" />
+                <input id="info-play-res-y" type="number" min="0" step="1" class="editToPlayRes" v-model="playResYModel"
+                    placeholder="PlayResY" />
+                <input id="info-play-res-depth" type="number" min="0" step="1" class="editToPlayRes"
+                    v-model="playDepthModel" placeholder="PlayDepth" />
+            </div>
+
+            <div class="twoOneLine">
+                <input type="number" min="0" step="1" v-model="layoutResXModel" class="editToLayoutRes"
+                    placeholder="LayoutResX" />
+                <input type="number" min="0" step="1" v-model="layoutResYModel" class="editToLayoutRes"
+                    placeholder="LayoutResY" />
+            </div>
+
+            <div class="twoOneLine">
+                <label for="editToYCbCrMatrix">YCbCr Matrix</label>
+                <select v-model="subtitleFile.info.YCbCr_Matrix" id="editToYCbCrMatrix">
+                    <option value="None">None</option>
+                    <option value="TV.601">TV.601</option>
+                    <option value="TV.709">TV.709</option>
+                    <option value="PC.601">PC.601</option>
+                    <option value="PC.709">PC.709</option>
+                    <option value="TV.FCC">TV.FCC</option>
+                    <option value="PC.FCC">PC.FCC</option>
+                    <option value="TV.240M">TV.240M</option>
+                    <option value="PC.240M">PC.240M</option>
+                </select>
+            </div>
+
+            <div class="twoOneLine">
+                <label for="editToWrapStyle" class="editToWrapStyle">Wrap Style</label>
+                <select v-model="subtitleFile.info.WrapStyle" id="editToWrapStyle">
+                    <option value="0">0: 智能换行，上行较宽</option>
+                    <option value="1">1: 尾词换行，仅 \N 强制换行</option>
+                    <option value="2">2: 不换行，\n 和 \N 强制换行</option>
+                    <option value="3">3: 智能换行，下行较宽</option>
+                </select>
+            </div>
+
+            <div class="twoOneLine">
+                <label for="editToScaledBorderAndShadow">Scaled Border And
+                    Shadow</label>
+                <input type="checkbox" id="editToScaledBorderAndShadow" v-model="scaledBorderAndShadowModel" />
+            </div>
+
             <div class="twoOneLine">
                 <label for="info-original-script">Original Script</label>
                 <input id="info-original-script" type="text" v-model="subtitleFile.info.Original_Script"
@@ -170,44 +227,6 @@ const backColourAssModel = computed({
                     placeholder="Update Details" />
             </div>
 
-            <div class="threeOneLine">
-                <input id="info-play-res-x" type="number" min="0" step="1" class="editToPlayRes" v-model="playResXModel"
-                    placeholder="PlayResX" />
-                <input id="info-play-res-y" type="number" min="0" step="1" class="editToPlayRes" v-model="playResYModel"
-                    placeholder="PlayResY" />
-                <input id="info-play-res-depth" type="number" min="0" step="1" class="editToPlayRes"
-                    v-model="playDepthModel" placeholder="PlayDepth" />
-            </div>
-
-            <div class="twoOneLine">
-                <label for="editToYCbCrMatrix">YCbCr Matrix</label>
-                <select v-model="subtitleFile.info.YCbCr_Matrix" id="editToYCbCrMatrix">
-                    <option value="None">None</option>
-                    <option value="TV.601">TV.601</option>
-                    <option value="TV.709">TV.709</option>
-                    <option value="PC.601">PC.601</option>
-                    <option value="PC.709">PC.709</option>
-                    <option value="TV.FCC">TV.FCC</option>
-                    <option value="PC.FCC">PC.FCC</option>
-                    <option value="TV.240M">TV.240M</option>
-                    <option value="PC.240M">PC.240M</option>
-                </select>
-            </div>
-
-            <div class="twoOneLine">
-                <label for="editToWrapStyle" class="editToWrapStyle">Wrap Style</label>
-                <select v-model="subtitleFile.info.WrapStyle" id="editToWrapStyle">
-                    <option value="0">0: 智能换行，上行较宽</option>
-                    <option value="1">1: 尾词换行，仅 \N 强制换行</option>
-                    <option value="2">2: 不换行，\n 和 \N 强制换行</option>
-                    <option value="3">3: 智能换行，下行较宽</option>
-                </select>
-            </div>
-            <div class="twoOneLine">
-                <label for="editToScaledBorderAndShadow">Scaled Border And
-                    Shadow</label>
-                <input type="checkbox" id="editToScaledBorderAndShadow" v-model="scaledBorderAndShadowModel" />
-            </div>
         </div>
     </div>
 
@@ -561,6 +580,12 @@ div.bar {
 
         .editToPlayRes {
             appearance: textfield;
+        }
+
+        .editToLayoutRes {
+            appearance: textfield;
+            margin: auto;
+            width: calc(44% - 2px - 1rem);
         }
     }
 }
