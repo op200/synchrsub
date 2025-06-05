@@ -3,9 +3,9 @@ import { RouterLink, RouterView } from 'vue-router'
 import { computed, onMounted, onBeforeUnmount, reactive, ref, watch, type VNodeRef } from 'vue'
 
 // Pinia
-import { useCounterStore } from '@/stores/mainStore';
+import { useMainStore } from '@/stores/mainStore';
 import { storeToRefs } from 'pinia';
-const mainStore = useCounterStore();
+const mainStore = useMainStore();
 
 // ASS 渲染库
 import ASS from 'assjs';
@@ -67,15 +67,39 @@ async function openSub() {
 
 // 字幕行选择
 
-const isMultiSelectRow = ref(false);
+const isMouseDownSelectRow = ref(false);
+const isMultiSelectRow = ref(false); // Ctrl
+const isRangeSelectRow = ref(false); // Shift
 
-function selectRow(index: number) {
-  if (isMultiSelectRow.value)
-    subtitleFile.value.rowList.val[index].selected = !subtitleFile.value.rowList.val[index].selected;
+const multiSelectStart = ref(0)
+let selectedRangeStart: number = 0
+let selectedRangeEnd: number = 0
+
+function selectMultiRows(index: number) {
+  let i
+  let max, min
+
+  if (isMultiSelectRow.value) {
+    // max = Math.max(multiSelectStart.value, index), min = Math.min(multiSelectStart.value, index)
+    // for (i = min; i <= max; ++i)
+      subtitleFile.value.rowList.val[index].selected = !subtitleFile.value.rowList.val[index].selected;
+  }
   else {
     subtitleFile.value.rowList.clearSelected();
     subtitleFile.value.rowList.val[index].selected = true;
   }
+
+  if (isRangeSelectRow.value) {
+    console.log(selectedRangeStart, selectedRangeEnd, index)
+    max = Math.max(selectedRangeStart, index), min = Math.min(selectedRangeStart, index)
+    for (i = min; i < max; ++i)
+      subtitleFile.value.rowList.val[i].selected = false;
+
+    max = Math.max(selectedRangeStart, index), min = Math.min(selectedRangeStart, index)
+    for (i = min; i <= max; ++i)
+      subtitleFile.value.rowList.val[i].selected = true;
+  }
+
   subtitleFile.value.rowList.currentRowIndex = index;
 }
 
@@ -83,15 +107,29 @@ const multiSelectButtonBackgroundColor = computed(() => {
   return isMultiSelectRow.value ? 'lightgray' : 'rgb(230, 230, 230)';
 });
 
+const rangeSelectButtonBackgroundColor = computed(() => {
+  return isRangeSelectRow.value ? 'lightgray' : 'rgb(230, 230, 230)';
+});
+
 class KeyBordListener {
   static keyDown(event: KeyboardEvent) {
     if (event.ctrlKey && event.key === 'Control') {
+      multiSelectStart.value = subtitleFile.value.rowList.currentRowIndex
       isMultiSelectRow.value = true;
     }
+    else if (event.shiftKey && event.key === 'Shift') {
+      isRangeSelectRow.value = true;
+      selectedRangeStart = subtitleFile.value.rowList.currentRowIndex
+    }
   }
+
   static keyUp(event: KeyboardEvent) {
     if (!event.ctrlKey && event.key === 'Control') {
       isMultiSelectRow.value = false;
+    }
+    else if (!event.shiftKey && event.key === 'Shift') {
+      isRangeSelectRow.value = false;
+      selectedRangeEnd = selectedRangeStart
     }
   }
 }
@@ -266,8 +304,8 @@ onBeforeUnmount(() => {
 
 
 <template>
-  <div id="desk" :class="deskClass">
 
+  <div id="desk" :class="deskClass">
 
     <button id="deskClassSwitchButton" @click="switchWidth">
       <img src="@/assets/arrow.svg">
@@ -277,14 +315,19 @@ onBeforeUnmount(() => {
       <button @click="openSub" id="openSub">载入字幕</button>
       <button @click="openVideo" id="openVideo">载入视频</button>
 
-      <button @click="isMultiSelectRow = !isMultiSelectRow;" id="multiSelect">选择多行</button>
+      <button @click="isMultiSelectRow = !isMultiSelectRow;" id="multiSelect">多选</button>
+
+      <button @click="isRangeSelectRow = !isRangeSelectRow;" id="rangeSelect">范围选择</button>
+
       <button @click="subtitleFile.rowList.val = subtitleFile.rowList.val.filter(item => !item.selected)"
         id="delSelected">删除所选</button>
+
       <button @click="subtitleFile.rowList.insertEmpty(0)" id="insertBefore">前插</button>
+
       <button @click="subtitleFile.rowList.insertEmpty(1)" id="multiAfter">后插</button>
 
       <button @click="playVideo">播放 / 暂停</button>
-      <button @click="seekVideo(subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.Start)">跳转</button>
+
       <button @click="switchMute" id="switchMute">静音</button>
 
       <div id="videoProgress">
@@ -294,12 +337,11 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-
-
     <div class="workSpace">
 
       <div class="subViewSpace">
-        <table v-show="isSubLoaded">
+        <table v-show="isSubLoaded" @mousedown="isMouseDownSelectRow = true" @mouseup="isMouseDownSelectRow = false"
+          @mouseenter="isMouseDownSelectRow = false">
           <colgroup>
             <col class="tNum">
             <col class="tLayer" v-show="isShowLayer">
@@ -325,12 +367,15 @@ onBeforeUnmount(() => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, index) in subtitleFile.rowList.val" @click="selectRow(index)" :class="{
+            <tr v-for="(item, index) in subtitleFile.rowList.val" @mousedown="selectMultiRows(index)" :class="{
               comment: item.sub.Comment,
               selected: item.selected,
-              selectedAndComment: item.selected && item.sub.Comment,
               current: index === subtitleFile.rowList.currentRowIndex
-            }">
+            }" @dblclick="seekVideo(subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.Start)"
+              @mouseenter="() => {
+                if (isMouseDownSelectRow) selectMultiRows(index)
+              }" @mouseleave="() => {
+              }">
               <td class="tNum">{{ index + 1 }}</td>
               <td class="tLayer" v-show="isShowLayer">{{ item.sub['Layer'] === 0 ? '' : item.sub['Layer'] }}</td>
               <!-- <td class="tStart">{{ item.sub.getStartStr() }}</td>
@@ -415,7 +460,6 @@ onBeforeUnmount(() => {
 
     </div>
 
-
   </div>
 
 
@@ -429,6 +473,7 @@ onBeforeUnmount(() => {
       <RouterView />
     </div>
   </div>
+
 </template>
 
 
@@ -446,7 +491,7 @@ onBeforeUnmount(() => {
 }
 
 .router-link-exact-active {
-  background-color: rgb(226, 226, 226);
+  background-color: var(--selected-background-color);
 }
 
 /* desk */
@@ -518,6 +563,10 @@ onBeforeUnmount(() => {
 
   #multiSelect {
     background-color: v-bind(multiSelectButtonBackgroundColor);
+  }
+
+  #rangeSelect {
+    background-color: v-bind(rangeSelectButtonBackgroundColor);
   }
 
   #switchMute {
@@ -686,19 +735,19 @@ onBeforeUnmount(() => {
       }
 
       tr:hover {
-        background-color: lightgray;
+        background-color: var(--hover-background-color);
       }
 
       tr.comment {
-        background-color: rgb(216, 222, 245);
+        background-color: var(--comment-background-color);
       }
 
       tr.selected {
-        background-color: lightgray;
+        background-color: var(--selected-background-color);
       }
 
-      tr.selectedAndComment {
-        background-color: rgb(177, 185, 214);
+      tr.comment.selected {
+        background-color: var(--comment-selected-background-color);
       }
 
       tr.current>td {
@@ -913,13 +962,14 @@ onBeforeUnmount(() => {
       display: inline;
       text-decoration: none;
       color: var(--text-color);
+      /* background-color: var(--background-color); */
       border-right: 1px solid lightgray;
       padding: 0.3rem 1rem;
       white-space: nowrap;
     }
 
     >*:hover {
-      background-color: rgb(226, 226, 226);
+      background-color: var(--hover-background-color);
     }
   }
 

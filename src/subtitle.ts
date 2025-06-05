@@ -321,7 +321,7 @@ class SubStyle {
 
     }
 
-    toString() {
+    toString(): string {
         return 'Style: ' +
             [
                 this.Name,
@@ -348,6 +348,33 @@ class SubStyle {
                 this.MarginV,
                 this.Encoding
             ].join(',');
+    }
+
+    copy(): SubStyle {
+        return new SubStyle(
+            this.Name,
+            this.Fontname,
+            this.Fontsize,
+            new SubColor(this.PrimaryColour.r, this.PrimaryColour.g, this.PrimaryColour.b),
+            new SubColor(this.SecondaryColour.r, this.SecondaryColour.g, this.SecondaryColour.b),
+            new SubColor(this.OutlineColour.r, this.OutlineColour.g, this.OutlineColour.b),
+            new SubColor(this.BackColour.r, this.BackColour.g, this.BackColour.b),
+            this.Bold,
+            this.Italic,
+            this.Underline,
+            this.StrikeOut,
+            this.ScaleX,
+            this.ScaleY,
+            this.Spacing,
+            this.Angle,
+            this.BorderStyle,
+            this.Outline,
+            this.Shadow,
+            this.Alignment,
+            this.MarginL,
+            this.MarginR,
+            this.MarginV,
+            this.Encoding)
     }
 }
 
@@ -422,6 +449,12 @@ class SubStyleList {
             return;
         else
             --this.currentRowIndex;
+    }
+
+    copy() {
+        const copy = this.val[this.currentRowIndex].copy()
+        copy.Name += "-copy"
+        this.insert(copy)
     }
 }
 

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { useCounterStore } from '@/stores/mainStore';
+import { useMainStore } from '@/stores/mainStore';
 import { storeToRefs } from 'pinia';
 
 // 自定义字幕类
 import { SubStyle } from '@/subtitle'
 
-const mainStore = useCounterStore();
+const mainStore = useMainStore();
 
 
 let { isSubLoaded } = storeToRefs(mainStore);
@@ -233,16 +233,24 @@ const backColourAssModel = computed({
     <div id="assStylesEditor">
         <span v-show="!isSubLoaded" class="beforeSubLoad">Styles 编辑区</span>
         <div v-if="isSubLoaded" style="width: 100%;height: 100%;position: relative;">
+
             <div class="bar">
                 <label>Styles</label>
+
                 <button @click="subtitleFile.styleList.moveUp" id="moveStyleUp" title="Move style up">
                     <img src="@/assets/arrow.svg"></button>
+
                 <button @click="subtitleFile.styleList.moveDown" id="moveStyleDown" title="Move style down">
                     <img src="@/assets/arrow.svg"></button>
+
                 <button @click="subtitleFile.styleList.delect" id="delStyle" title="Delete style">Del</button>
+
                 <button @click="subtitleFile.styleList.insert(new SubStyle('New' + Date.now()))" id="newStyle"
                     title="Create new style">New</button>
+
+                <button @click="subtitleFile.styleList.copy" id="copyStyle" title="Create new style">Copy</button>
             </div>
+
 
             <div id="assStylesEditSpace">
                 <div id="assStylesListView">
@@ -441,6 +449,7 @@ const backColourAssModel = computed({
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -635,15 +644,19 @@ div.bar {
                 white-space: nowrap;
                 padding: 0.2rem 0.3rem;
                 cursor: pointer;
+                color: var(--text-color);
                 background-color: var(--background-color);
             }
 
-            >span:hover {
-                background-color: lightgray;
+            >span.selected {
+                color: var(--text-color);
+                background-color: var(--selected-background-color);
             }
 
-            >span.selected {
-                background-color: lightgray;
+            >span:hover,
+            >span.selected:hover {
+                color: var(--text-color);
+                background-color: var(--hover-background-color);
             }
         }
 

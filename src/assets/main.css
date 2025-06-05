@@ -1,17 +1,33 @@
 :root {
     --background-color: #fff;
+    --selected-background-color: rgb(212, 212, 212);
+    --hover-background-color: rgb(222, 222, 222);
     --text-color: #333;
+    --comment-background-color: rgb(216, 222, 245);
+    --comment-selected-background-color: rgb(177, 185, 214);
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
         --background-color: #1f1f1f;
-        --text-color: #fff;
+        --selected-background-color: rgb(103, 103, 103);
+        --hover-background-color: rgb(113, 113, 113);
+        --text-color: #c5c5c5;
+        --comment-background-color: rgb(123, 127, 147);
+        --comment-selected-background-color: rgb(141, 148, 175);
     }
 }
 
 * {
-    font-family: -apple-system, "Helvetica Neue", Helvetica, "Nimbus Sans L", "Liberation Sans", "PingFang SC", "Source Han Sans CN", "Source Han Sans SC", "Microsoft YaHei", "Wenquanyi Micro Hei", "WenQuanYi Zen Hei", "ST Heiti", SimHei, "WenQuanYi Zen Hei Sharp", sans-serif, "Hiragino Sans GB";
+    font-family: ui-sans-serif;
+}
+
+input,
+textarea {
+    color: var(--text-color);
+    background-color: var(--background-color);
+    border: 1px solid lightgray;
+    border-radius: 4px;
 }
 
 body {
