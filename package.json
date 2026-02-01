@@ -1,6 +1,6 @@
 {
   "name": "synchrsub",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,21 +10,22 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build"
   },
+  "packageManager": "pnpm@10.28.2",
   "dependencies": {
     "assjs": "^0.1.4",
-    "pinia": "3.0.3",
-    "vue": "^3.5.16",
-    "vue-router": "^4.5.1"
+    "pinia": "3.0.4",
+    "vue": "^3.5.27",
+    "vue-router": "^5.0.1"
   },
   "devDependencies": {
-    "@tsconfig/node22": "^22.0.2",
-    "@types/node": "^22.15.29",
-    "@vitejs/plugin-vue": "^5.2.4",
-    "@vue/tsconfig": "^0.7.0",
+    "@tsconfig/node22": "^22.0.5",
+    "@types/node": "^25.1.0",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "@vue/tsconfig": "^0.8.1",
     "npm-run-all2": "8.0.4",
-    "typescript": "5.8.3",
-    "vite": "^6.3.5",
-    "vite-plugin-vue-devtools": "^7.7.6",
-    "vue-tsc": "^2.2.10"
+    "typescript": "5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-vue-devtools": "^8.0.5",
+    "vue-tsc": "^3.2.4"
   }
 }

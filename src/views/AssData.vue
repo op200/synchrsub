@@ -1,48 +1,48 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useMainStore } from '@/stores/mainStore';
-import { storeToRefs } from 'pinia';
+import { ref, onMounted, computed } from 'vue'
+import { useMainStore } from '@/stores/mainStore'
+import { storeToRefs } from 'pinia'
 
 // 自定义字幕类
 import { SubStyle } from '@/subtitle'
 
-const mainStore = useMainStore();
+const mainStore = useMainStore()
 
 
-let { isSubLoaded } = storeToRefs(mainStore);
-let { subtitleFile } = storeToRefs(mainStore);
+let { isSubLoaded } = storeToRefs(mainStore)
+let { subtitleFile } = storeToRefs(mainStore)
 
-const isShowAssView = ref(true);
+const isShowAssView = ref(true)
 
 function selectStyleRow(index: number) {
-    subtitleFile.value.styleList.currentRowIndex = index;
+    subtitleFile.value.styleList.currentRowIndex = index
 }
 
 async function copyAss() {
     try {
-        await navigator.clipboard.writeText(subtitleFile.value.encode());
+        await navigator.clipboard.writeText(subtitleFile.value.encode())
     }
     catch (error) {
-        console.error("复制失败", error);
+        console.error("复制失败", error)
     }
 }
 
 async function saveSub() {
     const content = subtitleFile.value.encode()
     // 创建一个Blob对象，类型为文本
-    const blob = new Blob([content], { type: 'text/plain' });
+    const blob = new Blob([content], { type: 'text/plain' })
     // 创建一个下载链接
-    const link = document.createElement('a');
+    const link = document.createElement('a')
     // 设置链接的href属性为Blob对象的URL
-    link.href = URL.createObjectURL(blob);
+    link.href = URL.createObjectURL(blob)
     // 设置下载文件的名称
-    link.download = 'synchrsub.ass';
+    link.download = 'synchrsub.ass'
     // 将链接添加到文档中
-    document.body.appendChild(link);
+    document.body.appendChild(link)
     // 触发链接的点击事件，开始下载
-    link.click();
+    link.click()
     // 下载完成后移除链接
-    document.body.removeChild(link);
+    document.body.removeChild(link)
 }
 
 // info editor
@@ -50,74 +50,74 @@ async function saveSub() {
 const playResXModel = computed({
     get: () => subtitleFile.value.info.PlayResX === 0 ? '' : subtitleFile.value.info.PlayResX,
     set: newVal => subtitleFile.value.info.PlayResX = newVal ? Number(newVal) : 0
-});
+})
 
 const playResYModel = computed({
     get: () => subtitleFile.value.info.PlayResY === 0 ? '' : subtitleFile.value.info.PlayResY,
     set: newVal => subtitleFile.value.info.PlayResY = newVal ? Number(newVal) : 0
-});
+})
 
 const playDepthModel = computed({
     get: () => subtitleFile.value.info.PlayDepth === 0 ? '' : subtitleFile.value.info.PlayDepth,
     set: newVal => subtitleFile.value.info.PlayDepth = newVal ? Number(newVal) : 0
-});
+})
 
 const layoutResXModel = computed({
     get: () => subtitleFile.value.info.LayoutResX === 0 ? '' : subtitleFile.value.info.LayoutResX,
     set: newVal => subtitleFile.value.info.LayoutResX = newVal ? Number(newVal) : 0
-});
+})
 
 const layoutResYModel = computed({
     get: () => subtitleFile.value.info.LayoutResY === 0 ? '' : subtitleFile.value.info.LayoutResY,
     set: newVal => subtitleFile.value.info.LayoutResY = newVal ? Number(newVal) : 0
-});
+})
 
 const scaledBorderAndShadowModel = computed({
     get: () => subtitleFile.value.info.ScaledBorderAndShadow === 'yes',
     set: newVal => subtitleFile.value.info.ScaledBorderAndShadow = newVal ? 'yes' : 'no'
-});
+})
 
 // style editor
 
 const checkName = computed(() => {
-    if (subtitleFile.value.styleList.val.length === 0) return 'var(--background-color)';
+    if (subtitleFile.value.styleList.val.length === 0) return 'var(--background-color)'
     return subtitleFile.value.styleList.checkName(subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].Name, subtitleFile.value.styleList.currentRowIndex) ? 'var(--background-color)' : 'red'
 })
 
 const primaryColourHTMLModel = computed({
     get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].PrimaryColour.getHTMLColor(),
     set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].PrimaryColour.set(newVal)
-});
+})
 
 const secondaryColourHTMLModel = computed({
     get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].SecondaryColour.getHTMLColor(),
     set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].SecondaryColour.set(newVal)
-});
+})
 
 const outlineColourHTMLModel = computed({
     get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].OutlineColour.getHTMLColor(),
     set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].OutlineColour.set(newVal)
-});
+})
 
 const backColourHTMLModel = computed({
     get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].BackColour.getHTMLColor(),
     set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].BackColour.set(newVal)
-});
+})
 
 const primaryColourAssModel = computed({
     get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].PrimaryColour.getAssStyleColor(),
     set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].PrimaryColour.set(newVal)
-});
+})
 
 const secondaryColourAssModel = computed({
     get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].SecondaryColour.getAssStyleColor(),
     set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].SecondaryColour.set(newVal)
-});
+})
 
 const outlineColourAssModel = computed({
     get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].OutlineColour.getAssStyleColor(),
     set: (newVal) => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].OutlineColour.set(newVal)
-});
+})
 
 const backColourAssModel = computed({
     get: () => subtitleFile.value.styleList.val[subtitleFile.value.styleList.currentRowIndex].BackColour.getAssStyleColor(),

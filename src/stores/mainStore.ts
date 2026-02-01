@@ -4,10 +4,10 @@ import { defineStore } from 'pinia'
 
 export const useMainStore = defineStore('mainStore', () => {
 
-  let isSubLoaded = ref(false);
+  let isSubLoaded = ref(false)
 
 
-  const subtitleFile = ref(SubFile.decode(''));
+  const subtitleFile = ref(SubFile.decode(''))
   const name = "synchsub_subtitleFile"
   const jsonStr = localStorage.getItem(name)
   if (jsonStr) {

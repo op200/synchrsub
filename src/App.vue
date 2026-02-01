@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
-import { computed, onMounted, onBeforeUnmount, reactive, ref, watch, type VNodeRef } from 'vue'
 
 // Pinia
-import { useMainStore } from '@/stores/mainStore';
-import { storeToRefs } from 'pinia';
-const mainStore = useMainStore();
+import { useMainStore } from '@/stores/mainStore'
+import { storeToRefs } from 'pinia'
+const mainStore = useMainStore()
 
 // ASS 渲染库
-import ASS from 'assjs';
+import ASS from 'assjs'
 
 // 自定义字幕类
 import { Sub, SubFile } from '@/subtitle'
@@ -27,49 +27,49 @@ function switchWidth() {
 
 const tableFontSize = { str: '0.8rem', val: 0.8 }
 
-let { subtitleFile } = storeToRefs(mainStore);
+let { subtitleFile } = storeToRefs(mainStore)
 
 // 字幕加载与保存
 
-let { isSubLoaded } = storeToRefs(mainStore);
+let { isSubLoaded } = storeToRefs(mainStore)
 
-let subViewTip = ref('等待载入字幕');
+let subViewTip = ref('等待载入字幕')
 
 async function openSub() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.ass';
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.ass'
 
-  isSubLoaded.value = false, subViewTip.value = '载入字幕中...';
+  isSubLoaded.value = false, subViewTip.value = '载入字幕中...'
 
   input.onchange = (event) => {
-    const target = event.target as HTMLInputElement;
+    const target = event.target as HTMLInputElement
     if (target.files && target.files.length > 0) {
-      const file = target.files[0];
+      const file = target.files[0]
       if (file) {
-        const reader = new FileReader();
+        const reader = new FileReader()
         reader.onload = (e) => {
           if (e.target) {
-            subtitleFile.value = SubFile.decode(e.target.result as string);
-            isSubLoaded.value = true;
+            subtitleFile.value = SubFile.decode(e.target.result as string)
+            isSubLoaded.value = true
             setTimeout(() => {
-              flushAssRenderer();
-            });
+              flushAssRenderer()
+            })
           }
-        };
-        reader.readAsText(file);
+        }
+        reader.readAsText(file)
       }
     }
-  };
+  }
 
-  input.click(); // 触发点击事件，打开文件选择器
+  input.click() // 触发点击事件，打开文件选择器
 }
 
 // 字幕行选择
 
-const isMouseDownSelectRow = ref(false);
-const isMultiSelectRow = ref(false); // Ctrl
-const isRangeSelectRow = ref(false); // Shift
+const isMouseDownSelectRow = ref(false)
+const isMultiSelectRow = ref(false) // Ctrl
+const isRangeSelectRow = ref(false) // Shift
 
 const multiSelectStart = ref(0)
 let selectedRangeStart: number = 0
@@ -79,56 +79,57 @@ function selectMultiRows(index: number) {
   let i
   let max, min
 
-  if (isMultiSelectRow.value) {
+  if (isMultiSelectRow.value && subtitleFile.value.rowList.val[index]) {
     // max = Math.max(multiSelectStart.value, index), min = Math.min(multiSelectStart.value, index)
     // for (i = min; i <= max; ++i)
-      subtitleFile.value.rowList.val[index].selected = !subtitleFile.value.rowList.val[index].selected;
+    subtitleFile.value.rowList.val[index].selected = !subtitleFile.value.rowList.val[index]?.selected
   }
-  else {
-    subtitleFile.value.rowList.clearSelected();
-    subtitleFile.value.rowList.val[index].selected = true;
+  else if (subtitleFile.value.rowList.val[index]) {
+    subtitleFile.value.rowList.clearSelected()
+    subtitleFile.value.rowList.val[index].selected = true
   }
 
   if (isRangeSelectRow.value) {
     console.log(selectedRangeStart, selectedRangeEnd, index)
-    max = Math.max(selectedRangeStart, index), min = Math.min(selectedRangeStart, index)
+    max = Math.max(selectedRangeStart, index)
+    min = Math.min(selectedRangeStart, index)
     for (i = min; i < max; ++i)
-      subtitleFile.value.rowList.val[i].selected = false;
+      subtitleFile.value.rowList.val[i]!.selected = false
 
     max = Math.max(selectedRangeStart, index), min = Math.min(selectedRangeStart, index)
     for (i = min; i <= max; ++i)
-      subtitleFile.value.rowList.val[i].selected = true;
+      subtitleFile.value.rowList.val[i]!.selected = true
   }
 
-  subtitleFile.value.rowList.currentRowIndex = index;
+  subtitleFile.value.rowList.currentRowIndex = index
 }
 
 const multiSelectButtonBackgroundColor = computed(() => {
-  return isMultiSelectRow.value ? 'lightgray' : 'rgb(230, 230, 230)';
-});
+  return isMultiSelectRow.value ? 'lightgray' : 'rgb(230, 230, 230)'
+})
 
 const rangeSelectButtonBackgroundColor = computed(() => {
-  return isRangeSelectRow.value ? 'lightgray' : 'rgb(230, 230, 230)';
-});
+  return isRangeSelectRow.value ? 'lightgray' : 'rgb(230, 230, 230)'
+})
 
 class KeyBordListener {
   static keyDown(event: KeyboardEvent) {
     if (event.ctrlKey && event.key === 'Control') {
       multiSelectStart.value = subtitleFile.value.rowList.currentRowIndex
-      isMultiSelectRow.value = true;
+      isMultiSelectRow.value = true
     }
     else if (event.shiftKey && event.key === 'Shift') {
-      isRangeSelectRow.value = true;
+      isRangeSelectRow.value = true
       selectedRangeStart = subtitleFile.value.rowList.currentRowIndex
     }
   }
 
   static keyUp(event: KeyboardEvent) {
     if (!event.ctrlKey && event.key === 'Control') {
-      isMultiSelectRow.value = false;
+      isMultiSelectRow.value = false
     }
     else if (!event.shiftKey && event.key === 'Shift') {
-      isRangeSelectRow.value = false;
+      isRangeSelectRow.value = false
       selectedRangeEnd = selectedRangeStart
     }
   }
@@ -139,38 +140,38 @@ class KeyBordListener {
 const isShowLayer = computed(() => {
   for (const item of subtitleFile.value.rowList.val)
     if (item.sub.Layer !== 0)
-      return true;
-  return false;
+      return true
+  return false
 })
 
 const isShowActor = computed(() => {
   for (const item of subtitleFile.value.rowList.val)
     if (item.sub.Actor !== '')
-      return true;
-  return false;
+      return true
+  return false
 })
 
 const isShowEffect = computed(() => {
   for (const item of subtitleFile.value.rowList.val)
     if (item.sub.Effect !== '')
-      return true;
-  return false;
+      return true
+  return false
 })
 
 // 视频预览
 
-const isVideoLoaded = ref(false);
+const isVideoLoaded = ref(false)
 
-const videoViewTip = ref('视频预览区');
+const videoViewTip = ref('视频预览区')
 
-const videoSrc = ref('');
+const videoSrc = ref('')
 
 const isFulshAssRendererOk = ref(true)
 
 // ASS 渲染库相关变量
-const videoId = 'video';
-const assContainerId = 'ass-container';
-const assRenderer = ref<ASS>();
+const videoId = 'video'
+const assContainerId = 'ass-container'
+const assRenderer = ref<ASS>()
 
 function loadAssRenderer() {
   // if (isSubLoaded.value && isVideoLoaded.value) {
@@ -180,89 +181,90 @@ function loadAssRenderer() {
     {
       container: document.querySelector('#' + assContainerId) as HTMLVideoElement
     }
-  );
+  )
   // }
 }
 
 async function flushAssRenderer() {
-  isFulshAssRendererOk.value = false;
+  isFulshAssRendererOk.value = false
   setTimeout(() => {
-    isFulshAssRendererOk.value = true;
-  });
+    isFulshAssRendererOk.value = true
+  })
   setTimeout(() => {
-    loadAssRenderer();
-  });
+    loadAssRenderer()
+  })
 }
 
 async function openVideo() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'video/*';
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'video/*'
 
-  isVideoLoaded.value = false, videoViewTip.value = '载入视频中...';
+  isVideoLoaded.value = false, videoViewTip.value = '载入视频中...'
 
   input.onchange = (event) => {
-    const target = event.target as HTMLInputElement;
+    const target = event.target as HTMLInputElement
     if (target.files && target.files.length > 0) {
-      const file = target.files[0];
+      const file = target.files[0]
       if (file) {
-        videoSrc.value = URL.createObjectURL(file);
-        isVideoLoaded.value = true;
+        videoSrc.value = URL.createObjectURL(file)
+        isVideoLoaded.value = true
         setTimeout(() => {
-          flushAssRenderer();
-        }, 100);
+          flushAssRenderer()
+        }, 100)
       }
     }
-  };
+  }
 
-  input.click(); // 触发点击事件，打开文件选择器
+  input.click() // 触发点击事件，打开文件选择器
 }
 
 // 视频播放控制
 
-const videoElement = ref<HTMLVideoElement>();
+const videoElement = ref<HTMLVideoElement>()
 
-const videoProgress = ref(0); // 0..100.0
+const videoProgress = ref(0) // 0..100.0
 
-const videoCurrentTime = ref<string>(Sub.ms2str(videoElement.value?.currentTime || 0));
+const videoCurrentTime = ref<string>(Sub.ms2str(videoElement.value?.currentTime || 0))
 
-const videoDurationTime = ref<string>(Sub.ms2str(videoElement.value?.duration || 0));
+const videoDurationTime = ref<string>(Sub.ms2str(videoElement.value?.duration || 0))
 
 function flushVideoProgress() {
-  const currentTime = videoElement.value?.currentTime || 0;
-  const durationTime = videoElement.value?.duration || 0;
+  const currentTime = videoElement.value?.currentTime || 0
+  const durationTime = videoElement.value?.duration || 0
 
-  videoCurrentTime.value = Sub.ms2str(currentTime * 1000);
-  videoDurationTime.value = Sub.ms2str(durationTime * 1000);
+  videoCurrentTime.value = Sub.ms2str(currentTime * 1000)
+  videoDurationTime.value = Sub.ms2str(durationTime * 1000)
 
   if (durationTime)
-    videoProgress.value = 100 * (currentTime as number) / durationTime;
+    videoProgress.value = 100 * (currentTime as number) / durationTime
 }
 
 // 播放 / 暂停
 function playVideo() {
   if (videoElement.value?.paused === undefined)
-    return;
+    return
   if (videoElement.value.paused)
-    videoElement.value?.play();
+    videoElement.value?.play()
   else
-    videoElement.value?.pause();
+    videoElement.value?.pause()
 }
 
 // 跳转到指定时间
-function seekVideo(ms: number) {
-  videoElement.value!.currentTime = ms / 1000;
+function seekVideo(ms: number | undefined) {
+  if (ms === undefined) return
+  videoElement.value!.currentTime = ms / 1000
 }
 
 // 静音开关
-const isMuted = ref(true);
+const isMuted = ref(true)
 
 const switchMuteButtonBackgroundColor = computed(() => {
-  return isMuted.value ? 'lightgray' : 'rgb(230, 230, 230)';
-});
+  return isMuted.value ? 'lightgray' : 'rgb(230, 230, 230)'
+})
 
 function switchMute() {
-  isMuted.value = !isMuted.value;
+  isMuted.value = !isMuted.value
 }
 
 
@@ -270,9 +272,9 @@ function switchMute() {
 // 字幕编辑
 
 const layerModel = computed({
-  get: () => subtitleFile.value.rowList.val[subtitleFile.value.rowList.currentRowIndex].sub.Layer,
-  set: (newVal) => subtitleFile.value.rowList.val[subtitleFile.value.rowList.currentRowIndex].sub.Layer = newVal ? Number(newVal) : 0
-});
+  get: () => subtitleFile.value.rowList.val[subtitleFile.value.rowList.currentRowIndex]!.sub.Layer,
+  set: (newVal) => subtitleFile.value.rowList.val[subtitleFile.value.rowList.currentRowIndex]!.sub.Layer = newVal ? Number(newVal) : 0
+})
 
 // 生命周期
 
@@ -280,25 +282,25 @@ onMounted(() => {
 
   // 按键监听
 
-  window.addEventListener('keydown', KeyBordListener.keyDown);
-  window.addEventListener('keyup', KeyBordListener.keyUp);
+  window.addEventListener('keydown', KeyBordListener.keyDown)
+  window.addEventListener('keyup', KeyBordListener.keyUp)
 
   // 视频预览
 
-  loadAssRenderer();
+  loadAssRenderer()
   watch(subtitleFile, () => {
     if (isSubLoaded.value && isVideoLoaded.value)
-      flushAssRenderer();
-  }, { deep: true });
-});
+      flushAssRenderer()
+  }, { deep: true })
+})
 
 onBeforeUnmount(() => {
 
   // 按键监听
 
-  window.removeEventListener('keydown', KeyBordListener.keyDown);
-  window.removeEventListener('keyup', KeyBordListener.keyUp);
-});
+  window.removeEventListener('keydown', KeyBordListener.keyDown)
+  window.removeEventListener('keyup', KeyBordListener.keyUp)
+})
 </script>
 
 
@@ -371,7 +373,7 @@ onBeforeUnmount(() => {
               comment: item.sub.Comment,
               selected: item.selected,
               current: index === subtitleFile.rowList.currentRowIndex
-            }" @dblclick="seekVideo(subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.Start)"
+            }" @dblclick="seekVideo(subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex]?.sub.Start)"
               @mouseenter="() => {
                 if (isMouseDownSelectRow) selectMultiRows(index)
               }" @mouseleave="() => {
@@ -410,7 +412,7 @@ onBeforeUnmount(() => {
               <!-- 注释 -->
               <span class="checkboxSpace">
                 <input type="checkbox" id="rowCommentCheckbox"
-                  v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.Comment">
+                  v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex]!.sub.Comment">
                 <label for="rowCommentCheckbox">注释</label>
               </span>
 
@@ -419,39 +421,39 @@ onBeforeUnmount(() => {
 
               <!-- 样式 -->
               <input type="text" id="styleEditor" placeholder="Style"
-                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.Style">
+                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex]!.sub.Style">
 
               <!-- 开始时间 -->
               <input type="text" id="startEditor" placeholder="Start" title="开始时间"
-                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.Start">
+                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex]!.sub.Start">
 
               <!-- 结束时间 -->
               <input type="text" id="endEditor" placeholder="End" title="结束时间"
-                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.End">
+                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex]!.sub.End">
 
               <!-- 说话人 -->
               <input type="text" id="actorEditor" placeholder="Actor"
-                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.Actor">
+                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex]!.sub.Actor">
 
               <!-- 特效 -->
               <input type="text" id="effectEditor" placeholder="Effect"
-                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.Effect">
+                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex]!.sub.Effect">
 
               <!-- 左边距 -->
               <input type="number" min="0" step="1" id="marginLEditor" placeholder="Left Margin" title="左边距"
-                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.MarginL">
+                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex]!.sub.MarginL">
 
               <!-- 右边距 -->
               <input type="number" min="0" step="1" id="marginREditor" placeholder="Right Margin" title="右边距"
-                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.MarginR">
+                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex]!.sub.MarginR">
 
               <!-- 垂直边距 -->
               <input type="number" min="0" step="1" id="marginVEditor" placeholder="Vertical Margin" title="垂直边距"
-                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.MarginV">
+                v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex]!.sub.MarginV">
 
             </div>
             <textarea spellcheck="false" placeholder="Text"
-              v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex].sub.Text"></textarea>
+              v-model="subtitleFile.rowList.val[subtitleFile.rowList.currentRowIndex]!.sub.Text"></textarea>
           </div>
         </div>
 
